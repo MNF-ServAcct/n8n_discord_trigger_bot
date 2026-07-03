@@ -43,21 +43,16 @@ Every message triggers a POST to the configured URL with this JSON body:
 
 ## Setup
 
-### 1. Create a Discord Application
+### 1. Get Your Bot Credentials
 
-1. Go to [discord.com/developers/applications](https://discord.com/developers/applications)
-2. Create a new application → **Bot** section → enable **Message Content Intent**
-3. Copy the **Bot Token** and the **Application ID**
+In the [Discord Developer Portal](https://discord.com/developers/applications), open your existing application:
 
-### 2. Invite the Bot to Your Server
+- **Bot Token** → Bot section → Reset Token
+- **Application ID** → General Information → Application ID
 
-Use this URL (replace `YOUR_CLIENT_ID`):
+Make sure **Message Content Intent** is enabled under Bot → Privileged Gateway Intents.
 
-```
-https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot+applications.commands&permissions=2048
-```
-
-### 3. Configure Environment Variables
+### 2. Configure Environment Variables
 
 ```bash
 cp .env.example .env
