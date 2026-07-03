@@ -1,241 +1,151 @@
-# n8n trigger bot
+# Discord → n8n Webhook Bot
 
----
+A Discord bot that forwards channel messages to n8n (or any webhook URL) on a per-channel basis. Admins configure a webhook URL per channel using slash commands; every new message in that channel is then POSTed to the webhook as JSON.
 
-A public, read-only Discord bot that lets you forward messages, reactions, and thread events from your Discord server to your own n8n, Zapier, Make.com, or custom webhook for powerful automations.
+## Features
 
----
+- Per-channel webhook configuration — different channels can point to different n8n workflows
+- Slash commands with permission checks (`Manage Channels` required)
+- SSRF protection — only public HTTPS URLs are accepted
+- Zero-database setup — config is stored in a local `webhooks.json` file
+- Lightweight: only three dependencies (`discord.js`, `axios`, `dotenv`)
 
-## Officially Verified by Discord
+## Slash Commands
 
-GREAT NEWS : the n8n trigger bot on discord has officially been verified by discord and you can find it on the discord discovery marketplace for FREE. Just go to Discord > Discover > Apps > Search for n8n 
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/setup <webhook_url>` | Configure a webhook for the current channel | Manage Channels |
+| `/remove` | Remove the webhook from the current channel | Manage Channels |
+| `/status` | Show whether this channel has a webhook configured | Everyone |
 
-![n8n trigger bot on discord discovery apps](https://n8n-discord-trigger-bot.emp0.com/image/n8n-trigger-bot-on-discord-discovery-apps.png)
+## Webhook Payload
 
+Every message triggers a POST to the configured URL with this JSON body:
 
----
-
-## 📺 Video Tutorial
-
-[![n8n Discord Bot Tutorial](https://img.youtube.com/vi/BrYd71pT5cw/maxresdefault.jpg)](https://youtu.be/BrYd71pT5cw)
-
-*Watch our complete tutorial on how to set up and use the n8n Discord trigger bot*
-
----
-
-## Important Links
-
-- [Terms of Service](./TERMS_OF_SERVICE.md)
-- [Privacy Policy](./PRIVACY_POLICY.md)
-- [Register for n8n](https://n8n.partnerlinks.io/emp0)
-- [Bot Official Website](https://n8n-discord-trigger-bot.emp0.com)
-- [Developed and mainted by: Emp0 Team](https://emp0.com)
-
-## 1. Add the Bot to Your Server
-
-**[Invite Link](https://discord.com/discovery/applications/1389933424331980993):**
-```
-https://discord.com/discovery/applications/1389933424331980993
-```
-- The bot only requests minimal, read-only permissions:
-  - Read Messages/View Channels
-  - Read Message History
-  - Use Slash Commands
-- The bot cannot send messages, moderate, or manage your server.
-
-Incase the above link doesn't work, try the [Alternate Invite Link](https://discord.com/oauth2/authorize?client_id=1389933424331980993)
-
----
-
-## 2. Set Up a Channel to Forward Messages
-
-1. Go to the channel you want to forward messages from.
-
-![Step 1: Add Bot to Server](https://n8n-discord-trigger-bot.emp0.com/image/step-1-add-bot-to-server.png)
-
-2. Create a ```POST``` webhook on n8n to receive the requests
-
-![Step 2: Setup Webhook](https://n8n-discord-trigger-bot.emp0.com/image/step-2-setup-webhook.png)
-
-3. Type the following slash command:
-   ```
-   /setup <webhook_url>
-   ```
-   - Example:
-     ```
-     /setup https://your-n8n-server.com/webhook/discord-channel-A
-     ```
-The bot will test your webhook and confirm setup if successful.
-
-![Step 3: Connect Discord Bot to Webhook](https://n8n-discord-trigger-bot.emp0.com/image/step-3-connect-discord-bot-to-webhook.png)
-
-4. Send a test message, and you should receive the data in your n8n flow
-
-![Step 4: Start Automating](https://n8n-discord-trigger-bot.emp0.com/image/step-4-start-automating.png)
-
-
-### **Bot Commands Interface**
-
-To connect a discord channel to a webhook:
-  ```
-  /setup https://your-n8n-server.com/webhook/discord-channel-A
-  ```
-
-![Setup Command](https://n8n-discord-trigger-bot.emp0.com/image/command-setup.png)
-
-To remove a webhook from a channel:
-  ```
-  /remove
-  ```
-
-![Remove Command](https://n8n-discord-trigger-bot.emp0.com/image/command-remove.png)
-
-To check the status:
-  ```
-  /status
-  ```
-
-![Status Command](https://n8n-discord-trigger-bot.emp0.com/image/command-status.png)
-
-To list all webhooks in your server:
-  ```
-  /list
-  ```
-
-![List Command](https://n8n-discord-trigger-bot.emp0.com/image/command-list.png)
-
----
-
-## 3. How to Handle Webhook Data in n8n, Zapier, Make.com, or Custom Server
-
-### **Supported Platforms**
-
-### **n8n**
-- Create a new **Webhook** node in n8n.
-- Set the webhook URL to match what you used in `/setup`.
-- The bot will POST a JSON payload to this URL for every event.
-- You can now process the data in your n8n workflow (e.g., filter, store, send notifications, etc).
-
-### **Zapier**
-- Use the **Webhooks by Zapier** trigger.
-- Set the trigger to "Catch Hook" and copy the custom webhook URL.
-- Use this URL in `/setup`.
-- Zapier will receive the JSON payload and you can build your automation.
-
-### **Make.com**
-- Use the **Webhooks** module to create a custom webhook.
-- Copy the webhook URL and use it in `/setup`.
-- Make.com will receive the JSON payload and you can build your scenario.
-
-### **Custom Server**
-- Set up an HTTP endpoint that accepts POST requests with JSON.
-- Use the endpoint URL in `/setup`.
-- Parse the JSON payload and process as needed.
-
----
-
-## 4. Example Webhook JSON Payload
-
-```
+```json
 {
-  "event_type": "message_create",
-  "timestamp": 1640995200000,
-  "content": {
-    "text": "Hello, world!",
-    "type": "message_create"
-  },
+  "event": "message_create",
+  "messageId": "123456789",
+  "content": "Hello world",
   "author": {
-    "id": "123456789012345678",
-    "username": "username",
-    "discriminator": "0000"
+    "id": "111",
+    "username": "john",
+    "displayName": "John Doe"
   },
-  "channel": {
-    "id": "123456789012345678",
-    "name": "general",
-    "type": 0
-  },
-  "guild": {
-    "id": "123456789012345678",
-    "name": "My Server"
-  },
-  "message_id": "123456789012345678",
-  "timestamp": 1640995200000
+  "channel": { "id": "222", "name": "general" },
+  "guild": { "id": "333", "name": "My Server" },
+  "attachments": [],
+  "timestamp": "2025-01-01T00:00:00.000Z"
 }
 ```
 
 ---
 
-## 5. Deploy it yourself
+## Setup
 
-For self-hosting, deployment, and advanced configuration, see the [deployment](./deployment/) folder in this repository.
+### 1. Create a Discord Application
 
-### **Data Backup System**
+1. Go to [discord.com/developers/applications](https://discord.com/developers/applications)
+2. Create a new application → **Bot** section → enable **Message Content Intent**
+3. Copy the **Bot Token** and the **Application ID**
 
-The bot uses a CSV-based backup system that automatically exports database data to CSV files and stores them in version control:
+### 2. Invite the Bot to Your Server
 
-- **Automatic backups**: Every hour via scheduled task
-- **CSV format**: Human-readable and easy to process
-- **Version controlled**: All backups are committed to Git
-- **Small size**: Efficient storage and transfer
-- **Easy recovery**: Simple restore process
+Use this URL (replace `YOUR_CLIENT_ID`):
 
-#### **GitHub Token Setup (Required for Backups)**
-
-To enable automatic backups to GitHub, you need to set up a GitHub Personal Access Token:
-
-1. **Create GitHub Token:**
-   - Go to [GitHub.com](https://github.com) → Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Click "Generate new token (classic)"
-   - Give it a name like "n8n Discord Bot Backup"
-   - Select the `repo` scope (full control of private repositories)
-   - Copy the generated token
-
-2. **Set Environment Variables:**
-   ```bash
-   GITHUB_USERNAME=your_github_username
-   GITHUB_REPO=your_username/n8n_discord_bot
-   GITHUB_TOKEN=your_github_personal_access_token
-   ```
-
-3. **Test GitHub Authentication:**
-   ```bash
-   node test-github-auth.js
-   ```
-
-#### **Manual Backup Operations:**
-```bash
-# List all backups
-node data-utils.js list
-
-# Create a manual backup
-node data-utils.js backup
-
-# Restore from a specific backup
-node data-utils.js restore backup-2025-01-11T03-00-00-964Z
-
-# Show latest backup details
-node data-utils.js latest
+```
+https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot+applications.commands&permissions=2048
 ```
 
-#### **Testing:**
-```bash
-# Test the backup system
-node test-backup.js
+### 3. Configure Environment Variables
 
-# Test GitHub authentication
-node test-github-auth.js
+```bash
+cp .env.example .env
 ```
 
-For more details, see the [data/README.md](./data/README.md) file.
+Edit `.env`:
+
+```env
+DISCORD_TOKEN=your_bot_token_here
+DISCORD_CLIENT_ID=your_application_id_here
+```
+
+### 4. Install and Run (local)
+
+```bash
+npm install
+npm start
+```
 
 ---
 
-## Contact Us
+## Deploy to Google Cloud
 
-If you have questions, need support, or want to get in touch with the developers:
-- **Email:** [tools@emp0.com](mailto:tools@emp0.com)
-- **Discord:** [@jym.god](https://discord.com/users/jym.god)
+### Option A — Compute Engine VM (recommended for 24/7 bots)
+
+The simplest option. The free-tier **e2-micro** instance is enough.
+
+```bash
+# 1. Create a VM (free tier: us-central1, us-west1, or us-east1)
+gcloud compute instances create discord-bot \
+  --machine-type=e2-micro \
+  --zone=us-central1-a \
+  --image-family=debian-12 \
+  --image-project=debian-cloud \
+  --tags=http-server
+
+# 2. SSH into the VM
+gcloud compute ssh discord-bot --zone=us-central1-a
+
+# 3. Install Node.js 20
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 4. Clone this repo
+git clone https://github.com/YOUR_USERNAME/n8n_discord_trigger_bot.git
+cd n8n_discord_trigger_bot
+
+# 5. Install dependencies and configure
+npm install --omit=dev
+cp .env.example .env
+nano .env   # fill in your tokens
+
+# 6. Run as a background service with PM2
+sudo npm install -g pm2
+pm2 start index.js --name discord-bot
+pm2 startup          # follow the printed command to enable autostart
+pm2 save
+```
+
+The bot will restart automatically if the VM reboots.
+
+### Option B — Cloud Run (containerized)
+
+Cloud Run is serverless but **requires min-instances=1** to keep the Discord WebSocket alive.
+
+```bash
+# Build and push the image
+gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/discord-bot
+
+# Deploy (min-instances=1 prevents cold starts from dropping the connection)
+gcloud run deploy discord-bot \
+  --image gcr.io/YOUR_PROJECT_ID/discord-bot \
+  --platform managed \
+  --region us-central1 \
+  --min-instances 1 \
+  --set-env-vars DISCORD_TOKEN=xxx,DISCORD_CLIENT_ID=yyy
+```
+
+> **Note:** Cloud Run's file system is ephemeral. `webhooks.json` is lost on each restart.  
+> Mount a Cloud Storage FUSE bucket or switch to Firestore/Cloud SQL if you need persistence across restarts.
 
 ---
 
-**Disclaimer:** This project is not affiliated with, endorsed by, or sponsored by Discord or n8n. We are independent developers who created this tool to solve our own integration needs. 
+## Project Structure
+
+```
+index.js          # Bot entry point — event handlers and slash commands
+package.json
+.env.example      # Template for required environment variables
+webhooks.json     # Auto-generated at runtime (not committed to git)
+```
